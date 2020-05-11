@@ -1,5 +1,8 @@
 use reqwest;
 
+use serde::{Serialize, Deserialize};
+
+#[derive(Serialize, Deserialize, Eq, PartialEq, PartialOrd)]
 pub struct Request {
     file: String,
     host: String,
@@ -17,24 +20,22 @@ impl Request {
         }
     }
 
-    pub fn connect_to_server(&self) -> bool {
+    pub async fn connect_to_server(&self) -> Result<reqwest::Response, reqwest::Error> {
         let url = format!(
             "http://{host}:{port}{path}",
             host = self.host,
             port = self.port,
             path = self.path
         );
-
-        let json = self.file;
         let client = reqwest::Client::new();
-        let response = client.post(url)
-            .json(json)
+        let res = client.post(&url)
+            .json(&self.file)
             .send();
 
-        if response.status().is_success() {
-            true
-        } else {
-            false
-        }
+        res.await
+    }
+
+    pub fn response(&self) {
+        // code goes here
     }
 }

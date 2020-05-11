@@ -1,32 +1,29 @@
 use std::path::Path;
+use std::time::SystemTime;
 
 use uuid::Uuid;
-use chrono::prelude::*;
 
-pub struct Uuid {
-    uuid: Uuid,
-    deploy_date: DateTime<Local>,
-    file: File
+pub struct TempUuid {
+    pub uuid: Uuid,
+    deploy_date: SystemTime,
+    file: String
 }
 
-impl Uuid {
-    pub fn new() -> Uuid {
-        Uuid {
-            
+impl TempUuid {
+    pub fn new() -> TempUuid {
+        TempUuid {
+            uuid: Uuid::new_v4(),
+            deploy_date: SystemTime::now(),
+            file: "uuid.txt".to_string(),
         }
     }
 
-    pub fn does_file_exist() -> bool {
+    fn does_file_exist(&self) -> bool {
         let path = Path::new("uuid.txt");
         path.exists()
     }
 
-    fn generate_deployment_date() {
-        Local.now()
-    }
-    
-    fn generate_uuid() -> Uuid {
-        Uuid::new_v4()
+    pub fn read_uuid_file(&self) {
+
     }
 }
-
