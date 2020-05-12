@@ -1,7 +1,8 @@
 use std::io::{self, BufRead};
 use std::path::Path;
 use linapi::system::modules::ModuleFile;
-
+use rppal::system::DeviceInfo;
+use ds18b20::Ds18b20;
 use crate::temperature;
 use crate::uuid;
 
@@ -11,7 +12,12 @@ pub struct TempRead<'a> {
     pub base_dir: &'a Path,
 }
 
+// it is possible that I could use the ds18b20 crate inside the implementation
+// maybe later, I don't have the effort to, lol
 impl<'a> TempRead<'a> {
+    /// Constructor for the TempRead struct
+    /// The constructor also loads the kernel modules for you, making it really conveient
+    /// Some validation is coming for the kmodules soon
     pub fn new() -> TempRead<'a> {
         let mut modvec: Vec<ModuleFile> = Vec::new();
         
@@ -27,23 +33,10 @@ impl<'a> TempRead<'a> {
             temp_f: None,
             base_dir: Path::new("/sys/bus/w1/devices/280/w1_slave"),
         }
-
-        // initalize concatination
-
-        // Command::new("sh")
-        //     .args(&["modprobe"])
-        //     .args(&["w1-gpio"])
-        //     .output()
-        //     .expect("That isn't supposed to happen!");
-
-        // Command::new("sh")
-        //     .args(&["modprobe"])
-        //     .args(&["w1-therm"])
-        //     .output()
-        //     .expect("That isn't supposed to happen!");
-        
     }
 
+    /// Method to actually read the temperature from the ds18b20
+    /// Method is using some funky string algorithm instead of using the ds18b20 crate
     fn read_temp_raw(&self) -> Vec<u8> {
         let mut cursor = io::Cursor::new(self.base_dir.to_str().unwrap());
         let mut buf: Vec<u8> = Vec::new();
@@ -59,6 +52,9 @@ impl<'a> TempRead<'a> {
         buf
     }
 
+    /// Method called to perform the perform the operation of reading the temperature
+    /// This method calls the private method that does the actual reading and returns
+    /// a `Vec<u8>` that the functions uses to calculate the temperature
     pub fn read_temp(&self) {
         let lines = self.read_temp_raw();
         let lines_slice = lines.as_slice()[1];
